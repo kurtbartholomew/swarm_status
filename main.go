@@ -11,11 +11,11 @@ import (
 	"time"
 )
 
-type DockerDaemon struct {
+type DockerHandle struct {
 	dockerClient *client.Client
 }
 
-func (daemonPtr *DockerDaemon) home(w http.ResponseWriter, r *http.Request) {
+func (dockerPtr *DockerHandle) home(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, "hey")
 }
 
@@ -33,8 +33,8 @@ type ServiceResponse struct {
 	IsGlobal bool `json:"is_global"`
 }
 
-func (daemonPtr *DockerDaemon) containerList(w http.ResponseWriter, _ *http.Request) {
-	containers, err := daemonPtr.dockerClient.ContainerList(context.Background(), types.ContainerListOptions{})
+func (dockerPtr *DockerHandle) containerList(w http.ResponseWriter, _ *http.Request) {
+	containers, err := dockerPtr.dockerClient.ContainerList(context.Background(), types.ContainerListOptions{})
 	if err != nil {
 		panic(err)
 	}
@@ -45,9 +45,9 @@ func (daemonPtr *DockerDaemon) containerList(w http.ResponseWriter, _ *http.Requ
 	err = json.NewEncoder(w).Encode(containersList)
 }
 
-func (daemonPtr *DockerDaemon) serviceList(w http.ResponseWriter, _ *http.Request) {
-	services, err := daemonPtr.dockerClient.ServiceList(context.Background(), types.ServiceListOptions{})
-	tasks, err := daemonPtr.dockerClient.TaskList(context.Background(), types.TaskListOptions{})
+func (dockerPtr *DockerHandle) serviceList(w http.ResponseWriter, _ *http.Request) {
+	services, err := dockerPtr.dockerClient.ServiceList(context.Background(), types.ServiceListOptions{})
+	tasks, err := dockerPtr.dockerClient.TaskList(context.Background(), types.TaskListOptions{})
 	if err != nil {
 		panic(err)
 	}
@@ -91,7 +91,7 @@ func main() {
 		panic(err)
 	}
 
-	dockerClient := DockerDaemon{dockerClient: cli}
+	dockerClient := DockerHandle{dockerClient: cli}
 	http.Handle("/", http.HandlerFunc(dockerClient.home))
 	http.Handle("/containers", http.HandlerFunc(dockerClient.containerList))
 	http.Handle("/services", http.HandlerFunc(dockerClient.serviceList))
